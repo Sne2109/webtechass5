@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator</title>
+  <style>
+    body {
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .calculator {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 300px;
+    }
+
+    .display {
+      width: 100%;
+      height: 50px;
+      background-color: #e9ecef;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: right;
+      font-size: 1.5em;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-x: auto;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 20px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #dee2e6;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #ced4da;
+    }
+
+    .operator {
+      background-color: #74c0fc;
+      color: white;
+    }
+
+    .operator:hover {
+      background-color: #4dabf7;
+    }
+
+    .equal {
+      background-color: #51cf66;
+      color: white;
+    }
+
+    .equal:hover {
+      background-color: #40c057;
+    }
+
+    .clear {
+      background-color: #ff6b6b;
+      color: white;
+    }
+
+    .clear:hover {
+      background-color: #fa5252;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="clear" onclick="clearDisplay()">C</button>
+      <button onclick="press('/')">÷</button>
+      <button onclick="press('*')">×</button>
+      <button onclick="press('-')">−</button>
+
+      <button onclick="press('7')">7</button>
+      <button onclick="press('8')">8</button>
+      <button onclick="press('9')">9</button>
+      <button onclick="press('+')">+</button>
+
+      <button onclick="press('4')">4</button>
+      <button onclick="press('5')">5</button>
+      <button onclick="press('6')">6</button>
+      <button class="equal" rowspan="2" onclick="calculate()">=</button>
+
+      <button onclick="press('1')">1</button>
+      <button onclick="press('2')">2</button>
+      <button onclick="press('3')">3</button>
+
+      <button onclick="press('0')">0</button>
+      <button onclick="press('.')">.</button>
+    </div>
+  </div>
+
+  <script>
+    let expression = '';
+    const display = document.getElementById('display');
+
+    function press(val) {
+      if (display.textContent === '0' && val !== '.') {
+        expression = val;
+      } else {
+        expression += val;
+      }
+      display.textContent = expression;
+    }
+
+    function clearDisplay() {
+      expression = '';
+      display.textContent = '0';
+    }
+
+    function calculate() {
+      try {
+        const tokens = tokenize(expression);
+        const result = evaluateTokens(tokens);
+        display.textContent = result;
+        expression = result.toString();
+      } catch (e) {
+        display.textContent = 'Error';
+        expression = '';
+      }
+    }
+
+    function tokenize(expr) {
+      return expr.match(/(\d+(\.\d+)?|[+\-*/])/g);
+    }
+
+    function evaluateTokens(tokens) {
+      const nums = [];
+      const ops = [];
+
+      const precedence = { '+': 1, '-': 1, '*': 2, '/': 2 };
+
+      function applyOp() {
+        const b = nums.pop();
+        const a = nums.pop();
+        const op = ops.pop();
+        switch (op) {
+          case '+': nums.push(a + b); break;
+          case '-': nums.push(a - b); break;
+          case '*': nums.push(a * b); break;
+          case '/': nums.push(a / b); break;
+        }
+      }
+
+      for (let token of tokens) {
+        if (!isNaN(token)) {
+          nums.push(parseFloat(token));
+        } else {
+          while (ops.length && precedence[ops[ops.length - 1]] >= precedence[token]) {
+            applyOp();
+          }
+          ops.push(token);
+        }
+      }
+
+      while (ops.length) {
+        applyOp();
+      }
+
+      return nums[0];
+    }
+  </script>
+
+</body>
+</html>
